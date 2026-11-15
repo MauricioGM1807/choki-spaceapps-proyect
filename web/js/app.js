@@ -4,7 +4,18 @@
  */
 
 const API_HOST = window.location.hostname || "127.0.0.1";
-const API_BASE = (window.location.port && window.location.port !== "80" && window.location.port !== "443") ? "" : `http://${API_HOST}:8766`;
+const _explicitApiBase = (
+  new URLSearchParams(window.location.search).get("api") ||
+  window.CHOKI_API_BASE ||
+  ""
+).trim().replace(/\/+$/, "");
+const API_BASE = _explicitApiBase
+  ? _explicitApiBase
+  : (window.location.port && window.location.port !== "80" && window.location.port !== "443")
+    ? ""
+    : (window.location.protocol === "https:" || API_HOST.endsWith(".github.io"))
+      ? null
+      : `http://${API_HOST}:8766`;
 
 let _backendCooldownUntil = 0;
 let _staticFallbackPromise = null;
@@ -19,6 +30,9 @@ async function getStaticFallback() {
 }
 
 async function apiFetch(path, options = {}) {
+  if (API_BASE === null) {
+    throw new Error("STATIC_HOST_NO_BACKEND");
+  }
   if (API_BASE && Date.now() < _backendCooldownUntil) {
     throw new Error("BACKEND_COOLDOWN");
   }
@@ -978,7 +992,7 @@ function bindGlobalControls() {
   });
 
   document.getElementById("btn-quick-export-cal")?.addEventListener("click", () => {
-    if (!navigator.onLine) {
+    if (!navigator.onLine || API_BASE === null) {
       exportOfflineHotspotsCsv();
       return;
     }
@@ -986,7 +1000,7 @@ function bindGlobalControls() {
   });
 
   const triggerGeoJsonExport = () => {
-    if (!navigator.onLine) {
+    if (!navigator.onLine || API_BASE === null) {
       exportOfflineHotspotsGeoJson();
       return;
     }
