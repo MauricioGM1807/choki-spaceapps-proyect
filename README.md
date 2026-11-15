@@ -346,9 +346,8 @@ This project is distributed under the **MIT License** — Copyright (c) 2026 Cho
 
 ## Support & Documentation
 
-- **Technical Blueprint:** [PROJECT_BLUEPRINT.md](PROJECT_BLUEPRINT.md)
 - **Build & Container Instructions:** [BUILD.md](BUILD.md)
-- **Contribution & Security Policies:** [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md)
+- **Security Policies:** [SECURITY.md](SECURITY.md)
 
 ---
 
@@ -356,4 +355,3 @@ This project is distributed under the **MIT License** — Copyright (c) 2026 Cho
 
 1. **NASA FIRMS (Fire Information for Resource Management System):** MODIS (`MCD14ML`, `MCD14DL`) and VIIRS (`VNP14IMGML`, `VJ114IMGML`, `VJ214IMGML`) active fire products — https://firms.modaps.eosdis.nasa.gov/
 2. **EFFIS (European Forest Fire Information System):** Copernicus Emergency Management Service EU wildfire statistics (`1,079,538 ha` burned in 2025 analysis) — https://effis.jrc.ec.europa.eu/
-3. **Architecture & Mathematical Specification:** [PROJECT_BLUEPRINT.md](PROJECT_BLUEPRINT.md)
