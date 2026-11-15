@@ -4,7 +4,7 @@
  * so firefighters and dispatchers retain situational awareness even when connectivity drops.
  */
 
-const SHELL_CACHE = "choki-shell-v80";
+const SHELL_CACHE = "choki-shell-v79";
 const BASEMAP_CACHE = "choki-basemap-perm-v1";
 const CLOUD_TILE_CACHE = "choki-clouds-v1";
 const API_CACHE = "choki-api-v1";
