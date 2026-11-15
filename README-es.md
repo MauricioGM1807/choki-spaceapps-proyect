@@ -130,8 +130,6 @@ donde $r_i$ y $r_j$ representan los radios efectivos de píxel calculados a part
 
 ## Arquitectura y estructura del repositorio
 
-La especificación científica completa y las fórmulas matemáticas se encuentran en [PROJECT_BLUEPRINT.md](PROJECT_BLUEPRINT.md).
-
 ```text
 .
 ├── server.py                       # Servidor HTTP/REST, cabeceras CSP, gzip/ETag y bucle NRT (puerto 8766)
@@ -344,9 +342,8 @@ Este proyecto se distribuye bajo la **Licencia MIT** — Copyright (c) 2026 Chok
 
 ## Soporte y documentación
 
-- **Especificación técnica:** [PROJECT_BLUEPRINT.md](PROJECT_BLUEPRINT.md)
 - **Guía de compilación y Docker:** [BUILD.md](BUILD.md)
-- **Políticas de contribución y seguridad:** [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md)
+- **Seguridad:** [SECURITY.md](SECURITY.md)
 
 ---
 
@@ -354,4 +351,3 @@ Este proyecto se distribuye bajo la **Licencia MIT** — Copyright (c) 2026 Chok
 
 1. **NASA FIRMS (Fire Information for Resource Management System):** Productos de fuego activo MODIS (`MCD14ML`, `MCD14DL`) y VIIRS (`VNP14IMGML`, `VJ114IMGML`, `VJ214IMGML`) — https://firms.modaps.eosdis.nasa.gov/
 2. **EFFIS (European Forest Fire Information System):** Estadísticas de incendios forestales en la UE de Copernicus EMS (análisis 2025 de `1,079,538 ha` quemadas) — https://effis.jrc.ec.europa.eu/
-3. **Especificación arquitectónica y matemática:** [PROJECT_BLUEPRINT.md](PROJECT_BLUEPRINT.md)
