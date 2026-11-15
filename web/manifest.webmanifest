@@ -1,0 +1,27 @@
+{
+  "name": "Chokí — Harmonized Fire Data",
+  "short_name": "Chokí FIRMS",
+  "description": "Multi-sensor MODIS (1 km) & VIIRS (375 m) harmonized fire intelligence platform.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#060b16",
+  "theme_color": "#7c1d13",
+  "icons": [
+    {
+      "src": "assets/logo/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/logo/project-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

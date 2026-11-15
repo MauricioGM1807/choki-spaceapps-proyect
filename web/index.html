@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chokí — HARMONIZED FIRE DATA | MODIS (1km) &amp; VIIRS (375m) Intelligence</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/favicon-32.png" />
+  <link rel="icon" type="image/svg+xml" href="assets/logo/project-logo.svg" />
+  <link rel="shortcut icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logo/apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#7c1d13" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link href="https://unpkg.com/maplibre-gl@5.8.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@5.8.0/dist/maplibre-gl.js"></script>
+</head>
+<body>
+
+  <!-- ====================================================================
+       0. CHOKÍ MOTION-GRAPHICS SPLASH SCREEN (60/120FPS REAL METAMORPHOSIS)
+       ==================================================================== -->
+  <div id="choki-splash" class="choki-splash" aria-label="Chokí Intro">
+    <canvas id="choki-motion-canvas" class="choki-motion-canvas"></canvas>
+
+    <!-- Emblema oficial + tipografía revelada al cierre de la metamorfosis -->
+    <div id="splash-logo-reveal" class="splash-logo-reveal">
+      <div class="splash-logo-emblem" id="splash-logo-emblem">
+        <img src="assets/logo/project-logo.svg" alt="Chokí Emblem" />
+      </div>
+      <div class="splash-brand-lockup" id="splash-brand-lockup">
+        <div class="splash-brand-name">Chokí</div>
+        <div class="splash-brand-line"></div>
+        <div class="splash-brand-tagline">HARMONIZED FIRE DATA</div>
+        <div class="splash-brand-sub">MODIS (1 km) &amp; VIIRS (375 m) Multi-Sensor Intelligence</div>
+      </div>
+    </div>
+
+    <div id="splash-telemetry-caption" class="splash-telemetry-caption">CONNECTING TO ORBITAL SWATHS</div>
+    <button id="btn-skip-splash" class="splash-skip-btn" type="button">Skip ›</button>
+  </div>
+
+  <!-- ====================================================================
+       1. PERSISTENT FULL-SCREEN 3D EARTH GLOBE
+       ==================================================================== -->
+  <div id="map-main-gl"></div>
+
+  <!-- ====================================================================
+       2. CHOKÍ NASA-STYLE HEADER & GLOBAL TELEMETRY CONTROLS
+       ==================================================================== -->
+  <div class="top-header-stack">
+    <header class="hud-top-bar">
+      <div class="brand-identity">
+        <button class="firms-hamburger-btn" id="btn-open-firms-drawer" type="button" aria-label="Open menu" title="Menu &amp; Resources">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <a class="project-logo-frame" href="./" title="Chokí — Harmonized Fire Data (Home)">
+          <img src="assets/logo/project-logo.svg" alt="Chokí Logo" />
+        </a>
+        <div class="brand-titles">
+          <div class="brand-heading-row">
+            <h1>Chokí</h1>
+            <span class="brand-tag">HARMONIZED FIRE DATA</span>
+          </div>
+          <div class="brand-subtitle-firms">Fire Information for Resource Management &amp; Multi-Sensor Intelligence</div>
+        </div>
+      </div>
+
+      <div class="hud-controls-row">
+        <!-- Inline Quick Search Input + NASA FIRMS Quick Search Pin Button -->
+        <div class="top-quick-search-wrap">
+          <input
+            id="top-quick-search-input"
+            type="text"
+            placeholder="Search address, city, or lat, lon..."
+            autocomplete="off"
+            aria-label="Quick search location or coordinates"
+          />
+          <button class="firms-quick-search-btn" id="btn-open-search" type="button" title="Open Location Tool (Current, Find &amp; Saved Locations)">
+            <span class="firms-qs-circle">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </span>
+            <span>Quick Search</span>
+          </button>
+          <div id="top-quick-search-dropdown" class="top-quick-search-dropdown" style="display:none;" role="listbox"></div>
+        </div>
+
+        <button class="firms-top-link-btn" id="btn-open-alerts-config" type="button" title="Configure Fire Alerts &amp; Notifications">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#facc15" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span>Fire Alerts</span>
+        </button>
+
+        <span id="hud-sync-pill" class="hud-sync-pill hud-net-pill" title="Internet &amp; Satellite Telemetry Connection Status">
+          <span class="hud-sync-dot" id="hud-sync-dot"></span>
+          <span id="hud-sync-label">Online</span>
+        </span>
+      </div>
+    </header>
+  </div>
+
+  <!-- CENTERED COMMERCIAL EMERGENCY PROXIMITY ALERT MODAL -->
+  <div id="proximity-alert-modal" class="proximity-modal-backdrop" style="display:none;" role="alertdialog" aria-modal="true" aria-labelledby="proximity-toast-title">
+    <div class="proximity-modal-card" id="proximity-modal-card">
+      <button class="proximity-close-x" id="btn-dismiss-proximity-toast" type="button" aria-label="Close alert" title="Close (ESC)">✕</button>
+
+      <!-- Hero Header: Large Animated Danger Emblem + Clean Commercial Typography -->
+      <div class="proximity-hero-section">
+        <div class="proximity-danger-stage" id="proximity-danger-stage" aria-hidden="true">
+          <span class="danger-shockwave ring-1"></span>
+          <span class="danger-shockwave ring-2"></span>
+          <div class="proximity-alert-emblem" id="proximity-alert-emblem">
+            <svg class="danger-core-icon" viewBox="0 0 48 48" width="42" height="42" fill="none">
+              <path d="M24 6L44 41H4L24 6Z" fill="rgba(239, 68, 68, 0.18)" stroke="#f87171" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+              <line x1="24" y1="18" x2="24" y2="29" stroke="#ffffff" stroke-width="3.6" stroke-linecap="round" />
+              <circle cx="24" cy="35.5" r="2.2" fill="#ffffff" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="proximity-hero-copy">
+          <div class="proximity-kicker-row">
+            <span class="proximity-live-dot"></span>
+            <span class="proximity-modal-kicker" id="proximity-modal-kicker">CRITICAL THERMAL PROXIMITY</span>
+          </div>
+          <h2 class="proximity-modal-title" id="proximity-toast-title">Active Wildfire Threat — Your GPS Location</h2>
+          <div class="proximity-sensor-sub" id="proximity-sensor-sub">
+            <span id="proximity-sensor-sub-detail">NASA FIRMS • MODIS (1 km) &amp; VIIRS (375 m) Verified</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-Column Commercial KPI Grid -->
+      <div class="proximity-modal-metrics" id="proximity-modal-metrics"></div>
+
+      <!-- Situational Summary -->
+      <div class="proximity-modal-body" id="proximity-toast-body"></div>
+
+      <!-- Clean Single-Row Commercial Action Bar -->
+      <div class="proximity-modal-actions">
+        <button class="proximity-btn proximity-btn-ghost" id="btn-acknowledge-proximity" type="button">
+          Dismiss
+        </button>
+        <div class="proximity-actions-right">
+          <button class="proximity-btn proximity-btn-secondary" id="btn-alert-inspect-qc" type="button">
+            View QC Audit
+          </button>
+          <button class="proximity-btn proximity-btn-Lists-primary" id="btn-alert-center-fire" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="7" />
+              <line x1="12" y1="2" x2="12" y2="5" />
+              <line x1="12" y1="19" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="5" y2="12" />
+              <line x1="19" y1="12" x2="22" y2="12" />
+              <circle cx="12" cy="12" r="2" fill="currentColor" />
+            </svg>
+            <span>Center on Fire</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NASA FIRMS-STYLE 3-TAB LOCATION TOOL WIDGET -->
+  <div id="location-search-modal" class="firms-location-tool-popover" style="display:none;" role="dialog" aria-modal="false" aria-labelledby="search-modal-title">
+    <div class="firms-loc-header">
+      <span class="firms-loc-title" id="search-modal-title">LOCATION TOOL</span>
+      <button class="firms-loc-close" id="btn-close-search-modal" type="button" aria-label="Close Location Tool">✕</button>
+    </div>
+
+    <div class="firms-loc-tabs" role="tablist">
+      <button class="firms-loc-tab" data-loctab="current" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="7" />
+          <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
+          <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+        </svg>
+        <span>Current<br/>Location</span>
+      </button>
+      <button class="firms-loc-tab active" data-loctab="find" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <span>Find<br/>Location</span>
+      </button>
+      <button class="firms-loc-tab" data-loctab="saved" type="button">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+          <line x1="4" y1="22" x2="4" y2="15" />
+        </svg>
+        <span>Saved<br/>Locations</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: CURRENT LOCATION -->
+    <div class="firms-loc-pane" id="firms-loc-pane-current" style="display:none;">
+      <div class="firms-loc-current-readout" id="firms-loc-current-readout">
+        Monitored Coordinates: <strong>Not set (Global View)</strong>
+      </div>
+      <div class="firms-loc-btn-stack">
+        <button class="btn btn-sm btn-primary" id="btn-loc-use-gps" type="button">⌖ Detect My GPS Location</button>
+        <button class="btn btn-sm" id="btn-pick-map-location" type="button">🖱️ Pick Point Directly on Globe</button>
+        <button class="btn btn-sm" id="btn-loc-scan-now" type="button">🔔 Scan Nearby Fires Now</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: FIND LOCATION -->
+    <div class="firms-loc-pane" id="firms-loc-pane-find">
+      <div class="firms-find-input-group">
+        <input
+          id="input-location-search"
+          type="text"
+          placeholder="Search for location, address, or enter coordinates..."
+          autocomplete="off"
+        />
+        <button class="firms-find-clear-btn" id="btn-clear-location-search" type="button" title="Clear search">✕</button>
+      </div>
+      <div id="location-search-results" class="location-search-results"></div>
+      <div class="firms-loc-footer-bar">
+        <label class="firms-loc-check-label">
+          <input type="checkbox" id="chk-multi-location" />
+          <span>Allow multiple location selection (pin to Saved)</span>
+        </label>
+        <button class="btn btn-sm btn-primary" id="btn-run-location-search" type="button" style="padding:3px 10px;">Go</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: SAVED LOCATIONS -->
+    <div class="firms-loc-pane" id="firms-loc-pane-saved" style="display:none;">
+      <div class="firms-saved-header-row">
+        <span style="font-size:11px; color:#94a3b8;">Saved &amp; Regional Presets</span>
+        <button class="btn btn-sm btn-primary" id="btn-save-current-view" type="button">+ Save Current Center</button>
+      </div>
+      <div id="firms-saved-locations-list" class="location-search-results"></div>
+    </div>
+  </div>
+
+  <!-- NASA FIRMS LEFT SLIDE-OUT HAMBURGER MENU DRAWER -->
+  <div id="firms-drawer-backdrop" class="firms-drawer-backdrop" style="display:none;">
+    <aside class="firms-side-drawer" aria-label="FIRMS Navigation &amp; Resources Menu">
+      <div class="firms-drawer-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img src="assets/logo/project-logo.svg" alt="Chokí" style="width:28px; height:28px; object-fit:contain;" />
+          <div>
+            <div style="font-weight:800; font-size:15px; letter-spacing:0.04em; color:#fff;">Chokí FIRMS</div>
+            <div style="font-size:10px; color:#fde68a;">Multi-Sensor Fire System</div>
+          </div>
+        </div>
+        <button class="firms-drawer-close" id="btn-close-firms-drawer" type="button" aria-label="Close menu">✕</button>
+      </div>
+
+      <div class="firms-drawer-list">
+        <button class="firms-drawer-item" data-drawer-action="firms-data-api" type="button">
+          <span class="firms-drawer-icon">🔥</span>
+          <span>FIRMS DATA API</span>
+        </button>
+        <button class="firms-drawer-item" data-drawer-action="fire-alerts" type="button">
+          <span class="firms-drawer-icon">🔔</span>
+          <span>FIRE ALERTS &amp; SETTINGS</span>
+        </button>
+        <button class="firms-drawer-item" data-drawer-action="tutorials" type="button">
+          <span class="firms-drawer-icon">📖</span>
+          <span>TUTORIALS &amp; USER GUIDE</span>
+        </button>
+        <button class="firms-drawer-item" data-drawer-action="faqs" type="button">
+          <span class="firms-drawer-icon">❓</span>
+          <span>FAQS &amp; HARMONIZATION</span>
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- CUSTOM DARK-GLASS FILTER PICKER MODAL (SENSOR, CONFIDENCE, SATELLITE, CYCLE) -->
+  <div id="hud-filter-picker-modal" class="proximity-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="hud-picker-title">
+    <div class="proximity-modal-card hud-picker-modal-card">
+      <button class="proximity-close-x" id="btn-close-hud-picker" type="button" aria-label="Close">✕</button>
+      <div class="proximity-kicker-row">
+        <span class="proximity-live-dot" style="background:#38bdf8; box-shadow:0 0 8px #38bdf8;"></span>
+        <span class="proximity-modal-kicker" style="color:#7dd3fc;">MISSION FILTER CONFIGURATION</span>
+      </div>
+      <h2 class="proximity-modal-title" id="hud-picker-title" style="margin-bottom:12px;">Select Option</h2>
+      <div class="hud-picker-options-list" id="hud-picker-options-list"></div>
+    </div>
+  </div>
+
+  <!-- CUSTOM BOUNDING BOX (COORDINATES) MODAL -->
+  <div id="bbox-coords-modal" class="proximity-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="bbox-modal-title">
+    <div class="proximity-modal-card hud-picker-modal-card">
+      <button class="proximity-close-x" id="btn-close-bbox-modal" type="button" aria-label="Close">✕</button>
+      <div class="proximity-kicker-row">
+        <span class="proximity-live-dot" style="background:#38bdf8; box-shadow:0 0 8px #38bdf8;"></span>
+        <span class="proximity-modal-kicker" style="color:#7dd3fc;">SPATIAL BOUNDING BOX</span>
+      </div>
+      <h2 class="proximity-modal-title" id="bbox-modal-title">Custom Coordinates (BBox)</h2>
+      <p style="margin:4px 0 14px; font-size:12px; color:#94a3b8; line-height:1.4;">
+        Define exact latitude &amp; longitude bounds (WGS84 decimal degrees) to isolate thermal detections in a specific corridor.
+      </p>
+
+      <div class="bbox-modal-grid">
+        <div class="control-field">
+          <label for="bbox-min-lat">Lat S (Min Latitude)</label>
+          <input type="number" id="bbox-min-lat" step="0.1" min="-90" max="90" placeholder="-90.0" autocomplete="off" />
+        </div>
+        <div class="control-field">
+          <label for="bbox-max-lat">Lat N (Max Latitude)</label>
+          <input type="number" id="bbox-max-lat" step="0.1" min="-90" max="90" placeholder="90.0" autocomplete="off" />
+        </div>
+        <div class="control-field">
+          <label for="bbox-min-lon">Lon W (Min Longitude)</label>
+          <input type="number" id="bbox-min-lon" step="0.1" min="-180" max="180" placeholder="-180.0" autocomplete="off" />
+        </div>
+        <div class="control-field">
+          <label for="bbox-max-lon">Lon E (Max Longitude)</label>
+          <input type="number" id="bbox-max-lon" step="0.1" min="-180" max="180" placeholder="180.0" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="bbox-modal-actions">
+        <button class="btn btn-sm" id="btn-bbox-use-viewport" type="button">Use Current View</button>
+        <button class="btn btn-sm" id="btn-bbox-clear" type="button">Clear / Global</button>
+        <button class="btn btn-primary btn-sm" id="btn-bbox-apply-modal" type="button" style="margin-left:auto;">Apply BBox</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM TIMELINE CALENDAR PICKER MODAL -->
+  <div id="timeline-calendar-modal" class="proximity-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="cal-modal-title">
+    <div class="proximity-modal-card hud-picker-modal-card">
+      <button class="proximity-close-x" id="btn-close-cal-modal" type="button" aria-label="Close">✕</button>
+      <div class="proximity-kicker-row">
+        <span class="proximity-live-dot" style="background:#38bdf8; box-shadow:0 0 8px #38bdf8;"></span>
+        <span class="proximity-modal-kicker" style="color:#7dd3fc;">ORBITAL ARCHIVE CALENDAR</span>
+      </div>
+      <h2 class="proximity-modal-title" id="cal-modal-title" style="margin-bottom:12px;">Select Date</h2>
+
+      <div class="cal-modal-nav">
+        <button class="btn btn-sm" id="btn-cal-prev-month" type="button" aria-label="Previous Month">‹</button>
+        <div class="cal-modal-selects">
+          <select id="cal-modal-month-sel" aria-label="Month"></select>
+          <select id="cal-modal-year-sel" aria-label="Year"></select>
+        </div>
+        <button class="btn btn-sm" id="btn-cal-next-month" type="button" aria-label="Next Month">›</button>
+      </div>
+
+      <div class="cal-modal-weekdays">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+      <div class="cal-modal-grid" id="cal-modal-days-grid"></div>
+
+      <div class="bbox-modal-actions" style="margin-top:12px;">
+        <button class="btn btn-sm" id="btn-cal-full-month" type="button">Full Month</button>
+        <button class="btn btn-primary btn-sm" id="btn-cal-today" type="button" style="margin-left:auto;">Today</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE DETECTIONS SELECTOR MODAL -->
+  <div id="zone-detections-modal" class="proximity-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="zone-modal-title">
+    <div class="proximity-modal-card zone-modal-card">
+      <button class="proximity-close-x" id="btn-close-zone-modal" type="button" aria-label="Close">✕</button>
+      <div class="proximity-kicker-row">
+        <span class="proximity-live-dot" style="background:#facc15; box-shadow:0 0 8px #facc15;"></span>
+        <span class="proximity-modal-kicker" style="color:#fde047;">ZONE THERMAL DETECTIONS</span>
+      </div>
+      <h2 class="proximity-modal-title" id="zone-modal-title" style="margin-bottom:4px;">Select Point to Inspect</h2>
+      <div id="zone-modal-subtitle" class="zone-modal-subtitle"></div>
+      <div class="zone-modal-table-wrap">
+        <table class="zone-modal-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Sensor / Sat</th>
+              <th>Coordinates</th>
+              <th>Acquired (Local)</th>
+              <th>FRP</th>
+              <th>Conf</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="zone-modal-tbody"></tbody>
+        </table>
+      </div>
+      <div class="bbox-modal-actions" style="margin-top:12px;">
+        <button class="btn btn-sm" id="btn-zone-modal-close-footer" type="button" style="margin-left:auto;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM TIMELINE SCOPE & STEP MODE MODAL -->
+  <div id="timeline-scope-modal" class="proximity-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="scope-modal-title">
+    <div class="proximity-modal-card hud-picker-modal-card">
+      <button class="proximity-close-x" id="btn-close-scope-modal" type="button" aria-label="Close">✕</button>
+      <div class="proximity-kicker-row">
+        <span class="proximity-live-dot" style="background:#38bdf8; box-shadow:0 0 8px #38bdf8;"></span>
+        <span class="proximity-modal-kicker" style="color:#7dd3fc;">TEMPORAL WINDOW &amp; STEP</span>
+      </div>
+      <h2 class="proximity-modal-title" id="scope-modal-title" style="margin-bottom:10px;">Select Time Mode</h2>
+      <div class="scope-modal-options" id="timeline-scope-options">
+        <button type="button" class="scope-modal-opt" data-scope-mode="day">
+          <div>
+            <strong>Single Day</strong>
+            <small>Show detections for the selected calendar date</small>
+          </div>
+          <span class="scope-modal-badge">DAY</span>
+        </button>
+        <button type="button" class="scope-modal-opt" data-scope-mode="week">
+          <div>
+            <strong>Weekly Step</strong>
+            <small>Step forward/backward 7 days at a time</small>
+          </div>
+          <span class="scope-modal-badge">WEEK</span>
+        </button>
+        <button type="button" class="scope-modal-opt" data-scope-mode="month">
+          <div>
+            <strong>Full Month</strong>
+            <small>Aggregate all days in the active month</small>
+          </div>
+          <span class="scope-modal-badge">MONTH</span>
+        </button>
+        <button type="button" class="scope-modal-opt" data-scope-mode="year">
+          <div>
+            <strong>Full Year</strong>
+            <small>Show all detections across the selected year</small>
+          </div>
+          <span class="scope-modal-badge">YEAR</span>
+        </button>
+        <button type="button" class="scope-modal-opt" data-scope-mode="all_years">
+          <div>
+            <strong>All Years (2001–2026)</strong>
+            <small>Full multi-sensor archive across all years</small>
+          </div>
+          <span class="scope-modal-badge">ALL</span>
+        </button>
+        <button type="button" class="scope-modal-opt" data-scope-mode="24h">
+          <div>
+            <strong>Last 24 Hours (Live)</strong>
+            <small>Most recent orbital passes in the past 24h</small>
+          </div>
+          <span class="scope-modal-badge">24H</span>
+        </button>
+        <button type="button" class="scope-modal-opt" data-scope-mode="7d">
+          <div>
+            <strong>Last 7 Days (Live)</strong>
+            <small>Rolling 7-day NRT satellite detections</small>
+          </div>
+          <span class="scope-modal-badge">7D</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAPTURE FORMAT PICKER MODAL -->
+  <div id="capture-format-modal" class="proximity-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="capture-modal-title">
+    <div class="proximity-modal-card hud-picker-modal-card">
+      <button class="proximity-close-x" id="btn-close-capture-modal" type="button" aria-label="Close">✕</button>
+      <div class="proximity-kicker-row">
+        <span class="proximity-live-dot" style="background:#38bdf8; box-shadow:0 0 8px #38bdf8;"></span>
+        <span class="proximity-modal-kicker" style="color:#7dd3fc;">IMAGE EXPORT</span>
+      </div>
+      <h2 class="proximity-modal-title" id="capture-modal-title" style="margin-bottom:10px;">Select Capture Format</h2>
+      <div class="scope-modal-options">
+        <button type="button" class="scope-modal-opt" data-capture-fmt="png">
+          <div>
+            <strong>PNG (Lossless)</strong>
+            <small>Crisp UI text and full detail — ideal for reports</small>
+          </div>
+          <span class="scope-modal-badge">.PNG</span>
+        </button>
+        <button type="button" class="scope-modal-opt" data-capture-fmt="jpg">
+          <div>
+            <strong>JPEG (Compact)</strong>
+            <small>Smaller file size — ideal for quick sharing</small>
+          </div>
+          <span class="scope-modal-badge">.JPG</span>
+        </button>
+        <button type="button" class="scope-modal-opt" data-capture-fmt="webp">
+          <div>
+            <strong>WebP (Modern Web)</strong>
+            <small>High visual quality with minimal file size</small>
+          </div>
+          <span class="scope-modal-badge">.WEBP</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HARMONIZED DATABASE EXPORT MODAL -->
+  <div id="harmonized-export-modal" class="proximity-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
+    <div class="proximity-modal-card export-modal-card">
+      <button class="proximity-close-x" id="btn-close-export-modal" type="button" aria-label="Close">✕</button>
+      <div class="proximity-kicker-row">
+        <span class="proximity-live-dot" style="background:#38bdf8; box-shadow:0 0 8px #38bdf8;"></span>
+        <span class="proximity-modal-kicker" style="color:#7dd3fc;">CHOKÍ HARMONIZED DATABASE</span>
+      </div>
+      <h2 class="proximity-modal-title" id="export-modal-title">Export Harmonized Fire Data</h2>
+      <p class="export-modal-subtitle">
+        Cross-sensor calibrated &amp; co-located MODIS + VIIRS dataset (normalized baseline — never raw unharmonized NASA FIRMS fire feeds).
+      </p>
+
+      <div class="export-form-grid">
+        <!-- Region / Location Selector -->
+        <div class="export-field">
+          <label class="export-label" for="export-location-search">Region / Location</label>
+          <div class="inline-loc-search-wrap export-loc-wrap">
+            <input id="export-location-search" name="choki_export_loc_q" type="search" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-form-type="other" readonly onfocus="this.removeAttribute('readonly');" placeholder="Search region, country or city..." />
+            <div id="export-location-dropdown" class="inline-loc-dropdown export-loc-dropdown" style="display:none;"></div>
+          </div>
+          <div class="export-resolved-tag" id="export-region-badge">Scope: Global (ALL)</div>
+        </div>
+
+        <!-- Harmonized Dataset Layer -->
+        <div class="export-field">
+          <label class="export-label">Harmonized Layer</label>
+          <div class="export-seg-group" id="export-dataset-group">
+            <button type="button" class="export-seg-btn active" data-exp-dataset="events">
+              <strong>Co-located Events</strong>
+              <small>Deduplicated fires + α weights</small>
+            </button>
+            <button type="button" class="export-seg-btn" data-exp-dataset="series">
+              <strong>Monthly Series</strong>
+              <small>Calibrated index &amp; anomalies</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- Temporal Window Mode -->
+        <div class="export-field export-field-full">
+          <label class="export-label">Temporal Scope</label>
+          <div class="export-scope-pills" id="export-scope-group">
+            <button type="button" class="export-pill" data-exp-scope="all_years">All Years (2001–2026)</button>
+            <button type="button" class="export-pill active" data-exp-scope="full_year">Full Year</button>
+            <button type="button" class="export-pill" data-exp-scope="full_month">Full Month</button>
+            <button type="button" class="export-pill" data-exp-scope="specific_date">Specific Date</button>
+            <button type="button" class="export-pill" data-exp-scope="date_range">Date Range</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Date/Year/Month Pickers -->
+        <div class="export-field export-field-full export-temporal-controls" id="export-ctrl-year-month">
+          <div class="export-subcontrol" id="export-wrap-year">
+            <label class="export-label" for="export-year-select">Year</label>
+            <select id="export-year-select" class="export-select"></select>
+          </div>
+          <div class="export-subcontrol" id="export-wrap-month" style="display:none;">
+            <label class="export-label" for="export-month-select">Month</label>
+            <select id="export-month-select" class="export-select">
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+          <div class="export-subcontrol" id="export-wrap-single-date" style="display:none;">
+            <label class="export-label" for="export-single-date">Date</label>
+            <input id="export-single-date" type="date" class="export-input" min="2001-01-01" max="2026-12-31" value="2026-11-14" />
+          </div>
+          <div class="export-subcontrol" id="export-wrap-date-range" style="display:none;">
+            <label class="export-label">Date Range</label>
+            <div class="export-range-row">
+              <input id="export-start-date" type="date" class="export-input" min="2001-01-01" max="2026-12-31" value="2026-01-01" />
+              <span class="export-range-sep">to</span>
+              <input id="export-end-date" type="date" class="export-input" min="2001-01-01" max="2026-12-31" value="2026-11-14" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Format Selector -->
+        <div class="export-field export-field-full">
+          <label class="export-label">File Format</label>
+          <div class="export-seg-group" id="export-format-group">
+            <button type="button" class="export-seg-btn active" data-exp-format="csv">
+              <strong>CSV (.csv)</strong>
+              <small>Tabular spreadsheet, Excel, Python &amp; R</small>
+            </button>
+            <button type="button" class="export-seg-btn" data-exp-format="geojson">
+              <strong>GeoJSON (.geojson)</strong>
+              <small>Spatial vector polygons/points for QGIS &amp; web</small>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview Banner -->
+      <div class="export-preview-bar" id="export-preview-status">
+        Checking harmonized records...
+      </div>
+
+      <div class="proximity-modal-actions" style="margin-top:14px;">
+        <button type="button" class="btn" id="btn-cancel-export-modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="btn-run-harmonized-export">⬇ Download Harmonized Export</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIGURABLE FIRE ALERTS & NOTIFICATION SETTINGS MODAL -->
+  <div id="fire-alerts-config-modal" class="proximity-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="alerts-config-title">
+    <div class="proximity-modal-card alerts-config-card">
+      <button class="proximity-close-x" id="btn-close-alerts-config" type="button" aria-label="Close">✕</button>
+      <div class="proximity-kicker-row">
+        <span class="proximity-live-dot" style="background:#f59e0b; box-shadow:0 0 8px #f59e0b;"></span>
+        <span class="proximity-modal-kicker" style="color:#fbbf24;">ALERT CENTER</span>
+      </div>
+      <h2 class="proximity-modal-title" id="alerts-config-title">Fire Alert Settings</h2>
+      <p class="alerts-config-subtitle">
+        Real-time MODIS &amp; VIIRS perimeter monitoring with Dual-AI false-positive filtering.
+      </p>
+
+      <div class="alerts-config-grid">
+        <div class="hud-grid-2">
+          <div class="control-field alerts-slider-box">
+            <div class="alerts-metric-head">
+              <label>Detection Radius</label>
+              <strong id="alert-cfg-radius-val" style="color:#38bdf8;">120 km</strong>
+            </div>
+            <input id="alert-cfg-radius" type="hidden" value="120" />
+            <div class="alerts-stepper-row">
+              <button type="button" class="alerts-step-btn" data-step-target="radius" data-step-delta="-10" aria-label="Decrease radius">−</button>
+              <div class="alerts-preset-row" data-preset-group="radius">
+                <button type="button" class="alerts-preset-chip" data-val="25">25</button>
+                <button type="button" class="alerts-preset-chip" data-val="50">50</button>
+                <button type="button" class="alerts-preset-chip" data-val="120">120</button>
+                <button type="button" class="alerts-preset-chip" data-val="200">200</button>
+              </div>
+              <button type="button" class="alerts-step-btn" data-step-target="radius" data-step-delta="10" aria-label="Increase radius">+</button>
+            </div>
+          </div>
+
+          <div class="control-field alerts-slider-box">
+            <div class="alerts-metric-head">
+              <label>Min Power (FRP)</label>
+              <strong id="alert-cfg-frp-val" style="color:#fb923c;">15 MW</strong>
+            </div>
+            <input id="alert-cfg-min-frp" type="hidden" value="15" />
+            <div class="alerts-stepper-row">
+              <button type="button" class="alerts-step-btn" data-step-target="frp" data-step-delta="-5" aria-label="Decrease min power">−</button>
+              <div class="alerts-preset-row" data-preset-group="frp">
+                <button type="button" class="alerts-preset-chip" data-val="0">0</button>
+                <button type="button" class="alerts-preset-chip" data-val="15">15</button>
+                <button type="button" class="alerts-preset-chip" data-val="30">30</button>
+                <button type="button" class="alerts-preset-chip" data-val="60">60</button>
+              </div>
+              <button type="button" class="alerts-step-btn" data-step-target="frp" data-step-delta="5" aria-label="Increase min power">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-field">
+          <label>Delivery Channels</label>
+          <div class="alerts-channels-grid">
+            <label class="alert-channel-opt">
+              <input type="checkbox" id="alert-chk-modal" checked />
+              <div>
+                <strong>Emergency Popup</strong>
+                <small>Visual alert with 1-click camera lock</small>
+              </div>
+            </label>
+            <label class="alert-channel-opt">
+              <input type="checkbox" id="alert-chk-desktop" />
+              <div>
+                <strong>Browser / OS Push</strong>
+                <small>Notify even in background tabs</small>
+              </div>
+            </label>
+            <label class="alert-channel-opt">
+              <input type="checkbox" id="alert-chk-sound" />
+              <div>
+                <strong>Audio Chime</strong>
+                <small>Warning tone on critical proximity</small>
+              </div>
+            </label>
+            <label class="alert-channel-opt">
+              <input type="checkbox" id="alert-chk-ai-strict" checked />
+              <div>
+                <strong>Dual-AI Strict Filter</strong>
+                <small>Suppress flares &amp; cloud glint</small>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div id="alert-cfg-status" style="margin-top:8px; font-size:11.5px; color:#34d399; min-height:16px;"></div>
+
+      <div class="proximity-modal-actions" style="margin-top:12px;">
+        <button class="proximity-btn proximity-btn-ghost" id="btn-test-fire-alert" type="button">
+          🔔 Test Alert Now
+        </button>
+        <div class="proximity-actions-right">
+          <button class="proximity-btn proximity-btn-Lists-primary" id="btn-save-alert-cfg" type="button" style="background:linear-gradient(180deg,#0284c7,#0369a1); border-color:#38bdf8; box-shadow:none;">
+            Save Alert Preferences
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHOKÍ INTERACTIVE TUTORIAL, FAQS & HARMONIZATION GUIDE MODAL -->
+  <div id="tutorials-info-modal" class="proximity-modal-backdrop" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="tutorials-modal-title">
+    <div class="proximity-modal-card tutorials-modal-card">
+      <button class="proximity-close-x" id="btn-close-tutorials-modal" type="button" aria-label="Close">✕</button>
+      <div class="proximity-kicker-row">
+        <span class="proximity-modal-kicker" style="color:#38bdf8;">CHOKÍ DOCUMENTATION &amp; VISUAL GUIDE</span>
+      </div>
+      <h2 class="proximity-modal-title" id="tutorials-modal-title">User Guide, Interactive Map Tutorial &amp; FAQs</h2>
+
+      <div class="tutorials-tabs-bar" id="tutorials-tabs-bar">
+        <button class="seg-btn active" data-tuttab="how-to" type="button">📖 Visual Tutorial (Where to Click)</button>
+        <button class="seg-btn" data-tuttab="faqs" type="button">❓ FAQs &amp; Harmonization</button>
+        <button class="seg-btn" data-tuttab="alerts-guide" type="button">🔔 Fire Alerts &amp; Dual-AI</button>
+      </div>
+
+      <div class="tutorials-body-scroll">
+        <!-- TAB 1: COMPLETE VISUAL TUTORIAL WITH ANNOTATED SCREENSHOTS -->
+        <div class="tut-pane" id="tut-pane-how-to">
+          <div class="tut-banner-header">1. Main Map Workspace: Top Bar, Left Filters, Right Telemetry &amp; Bottom Dock</div>
+          <p class="tut-lead">
+            Chokí combines a live 3D/2D satellite fire globe with 26 years (2001–2026) of calibrated MODIS &amp; VIIRS analytics. Use the numbered hotspots below to navigate every control:
+          </p>
+
+          <figure class="tut-shot-figure">
+            <img src="assets/tutorial/tut-01-overview.png" alt="Chokí Main Map Workspace Callouts" class="tut-shot-img" />
+            <figcaption>Main workspace overview showing navigation, filters, anomaly telemetry, action dock, and timeline.</figcaption>
+          </figure>
+
+          <div class="tut-steps-grid">
+            <div class="tut-step-card">
+              <span class="tut-num">1</span>
+              <div>
+                <strong>Menu &amp; Quick Search (Top Bar)</strong>
+                <p>Click <code>≡</code> (top-left) for <em>FIRMS Data API</em>, <em>Fire Alerts &amp; Settings</em>, <em>Tutorials</em>, and <em>FAQs</em>. Type any city, region, or <code>lat, lon</code> in the top search bar or click <code>🔍 Quick Search</code> to fly the globe there.</p>
+              </div>
+            </div>
+            <div class="tut-step-card">
+              <span class="tut-num">2</span>
+              <div>
+                <strong>Layers &amp; Filters (Left HUD)</strong>
+                <p>Switch between <code>3D Globe</code> / <code>2D Planar</code> and <code>Satellite</code> / <code>Dark Map</code>. Pick a tool: <code>Inspect</code> (click hotspots), <code>Box</code> / <code>Poly</code> (analyze custom area), or <code>Measure</code> (geodesic km/mi distance). Toggle real NASA GIBS <code>Clouds</code> &amp; <code>Terrain</code>, or filter by Sensor, Confidence, Platform, FRP, and Day/Night.</p>
+              </div>
+            </div>
+            <div class="tut-step-card">
+              <span class="tut-num">3</span>
+              <div>
+                <strong>Anomaly &amp; Telemetry + Sensor Table (Right)</strong>
+                <p>Shows your active region's 26-year historical baseline: <code>% vs Median</code>, percentile (<code>Pxx</code>), robust <code>Z_MAD</code> score, Peak Season, <code>26-Yr Trend (Theil-Sen)</code>, and clicked fire details. Pull the <code>SENSORS</code> tab on the right to inspect raw vs. co-located detections.</p>
+              </div>
+            </div>
+            <div class="tut-step-card">
+              <span class="tut-num">4</span>
+              <div>
+                <strong>Analytical Views, Capture, Export &amp; Timeline (Bottom)</strong>
+                <p>Open <code>CALENDAR</code>, <code>ANALYTICS</code>, <code>COMPARE</code>, or <code>SCIENCE</code>. Use <code>TIMELINE</code> to toggle the 1–31 day ruler (or click the date pill to change Year/Month/Mode). Click <code>CAPTURE</code> to save the view as PNG/JPG/WebP, <code>EXPORT</code> for harmonized data, or <code>VIEW MODE</code> to hide HUDs.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="tut-banner-header" style="margin-top:16px;">2. Exporting Chokí's Harmonized Database &amp; Screenshots</div>
+          <figure class="tut-shot-figure">
+            <img src="assets/tutorial/tut-02-export-modal.png" alt="Chokí Harmonized Database Export Modal" class="tut-shot-img" />
+            <figcaption>Export Modal: export Chokí's calibrated events or 2001–2026 monthly series in CSV or GeoJSON.</figcaption>
+          </figure>
+          <ul class="tut-bullet-list">
+            <li><strong>Choose Region / Location:</strong> Search any monitored region (<code>MX-CHH</code>, <code>US-CAL</code>, <code>BR-AMZ</code>, <code>ES-IBE</code>, <code>AU-NSW</code>, <code>RU-SAK</code>), choose <code>Global (All Regions)</code>, or type a custom city to export a local bounding box.</li>
+            <li><strong>Pick Harmonized Layer:</strong> Select <code>Co-located Events</code> (deduplicated fire events with calibration α weights) or <code>Monthly Series</code> (2001–2026 calibrated index, anomalies, <code>Z_MAD</code>, R²).</li>
+            <li><strong>Pick Temporal Scope &amp; Format:</strong> Export <code>All Years</code>, a <code>Full Year</code>, a <code>Full Month</code> (e.g., Apr 2024 or all Aprils 2001–2026), a <code>Specific Date</code>, or a <code>Date Range</code> in <code>.CSV</code> or <code>.GeoJSON</code>.</li>
+          </ul>
+
+          <div class="tut-banner-header" style="margin-top:16px;">3. Exploring 26-Year Trends: Calendar, Analytics &amp; Compare</div>
+          <figure class="tut-shot-figure">
+            <img src="assets/tutorial/tut-03-analytics.png" alt="Chokí Analytics and Calibration View" class="tut-shot-img" />
+            <figcaption>Analytics View: compare any two years against the 26-year median and verify MODIS/VIIRS calibration parameters.</figcaption>
+          </figure>
+          <ul class="tut-bullet-list">
+            <li><strong>CALENDAR:</strong> 26-year × 12-month matrix color-coded by month-conditional severity percentiles (January is compared strictly with historical Januaries).</li>
+            <li><strong>ANALYTICS &amp; COMPARE:</strong> Compare Year A vs. Year B, inspect regional seasonal fingerprints, review unharmonized vs. harmonized trends, or compare two regions side by side.</li>
+            <li><strong>SCIENCE:</strong> Inspect all 6 mathematical stages behind Chokí's harmonization and anomaly scoring equations.</li>
+          </ul>
+        </div>
+
+        <!-- TAB 2: ACCURATE FAQS & HARMONIZATION -->
+        <div class="tut-pane" id="tut-pane-faqs" style="display:none;">
+          <div class="tut-banner-header">Frequently Asked Questions — Data, Calibration &amp; Accuracy</div>
+          <div class="faq-list">
+            <div class="faq-item">
+              <h4>How is Chokí's Harmonized Database different from raw NASA FIRMS?</h4>
+              <p>
+                Raw NASA FIRMS provides uncalibrated per-pixel thermal detections directly from MODIS (1 km) and VIIRS (375 m). After VIIRS launched in 2012, raw hotspot counts jumped artificially (~+700–820%) purely from finer pixel resolution—not more fires. Chokí removes that sensor jump through spatial effort normalization, co-located deduplication, and 2012–2026 overlap regression calibration before computing baselines or exports.
+              </p>
+            </div>
+            <div class="faq-item">
+              <h4>Which satellites and temporal archives are supported?</h4>
+              <p>
+                <strong>MODIS Collection 6.1 (1 km):</strong> Terra (Nov 2000–present) &amp; Aqua (Jul 2002–present).<br/>
+                <strong>VIIRS 375 m:</strong> Suomi-NPP (2012–Nov 2026), NOAA-20 / JPSS-1 (Apr 2018–present, 3,040 km gap-free swath), and NOAA-21 / JPSS-2 (Jan 2024–present).<br/>
+                <strong>Archive Coverage:</strong> Continuous monthly harmonized baseline from <strong>2001 to 2026</strong> plus Near Real-Time (NRT) live detections.
+              </p>
+            </div>
+            <div class="faq-item">
+              <h4>How does Co-located Event Deduplication prevent FRP double-counting?</h4>
+              <p>
+                Multiple satellites (Terra, Aqua, NOAA-20, NOAA-21) frequently image the same wildfire within hours of each other. Chokí clusters simultaneous detections within overlapping physical footprint radii and a 6-hour orbital window into a single <code>thermal_event_id</code>, reporting consolidated Fire Radiative Power (MW) rather than summing duplicate passes.
+              </p>
+            </div>
+            <div class="faq-item">
+              <h4>How are anomalies (Z_MAD, Percentiles) and trends (Theil-Sen) calculated?</h4>
+              <p>
+                Every month is compared strictly against the historical distribution of that <em>same calendar month</em> across 2001–2026. Instead of mean/standard deviation (easily skewed by one mega-fire year), Chokí uses the <strong>Median</strong>, <strong>MAD</strong> (<code>Z_MAD = 0.6745 × (x − median) / MAD</code>), empirical percentiles, and the non-parametric <strong>Theil-Sen</strong> slope to measure long-term trends robustly.
+              </p>
+            </div>
+            <div class="faq-item">
+              <h4>How do I download data for GIS, QGIS, Excel, or Python?</h4>
+              <p>
+                Click <strong>EXPORT</strong> in the bottom dock. Select your region or city, choose <em>Co-located Events</em> or <em>Monthly Series (2001–2026)</em>, pick a temporal filter (All Years, Full Year, Full Month, Specific Date, or Date Range), and download as <strong>.CSV</strong> or <strong>.GeoJSON</strong>. To save a snapshot of the map view, click <strong>CAPTURE</strong> and select PNG, JPG, or WebP.
+              </p>
+            </div>
+            <div class="faq-item">
+              <h4>Can I fetch raw data directly from NASA's API or use Chokí offline?</h4>
+              <p>
+                Yes. Open the <code>≡</code> menu → <strong>FIRMS DATA API</strong> to visit NASA EOSDIS FIRMS' official Area API documentation. Meanwhile, Chokí caches its shell, API telemetry, and viewed map tiles via Service Worker so emergency dispatchers retain situational awareness offline.
+              </p>
+            </div>
+          </div>
+          <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+            <button type="button" class="btn btn-primary" id="btn-tut-open-science">🔬 View Mathematical Equations (SCIENCE)</button>
+          </div>
+        </div>
+
+        <!-- TAB 3: FIRE ALERTS & DUAL-AI -->
+        <div class="tut-pane" id="tut-pane-alerts-guide" style="display:none;">
+          <div class="tut-banner-header">How Chokí Near-Real-Time Fire Alerts Work</div>
+          <p>
+            Unlike raw satellite feeds that trigger false alarms on steel mills, gas flares, or bright cloud reflections, Chokí runs a two-stage neural screening pipeline on candidate hotspots before alerting you:
+          </p>
+          <ul class="tut-bullet-list">
+            <li><strong>Stage 1 — IA-1 FireNet (4-8-1 MLP):</strong> Evaluates mid-infrared brightness temperature (<code>T_MIR</code>), thermal contrast (<code>ΔT = T_MIR − T_TIR</code>), Fire Radiative Power (<code>FRP MW</code>), and diurnal timing.</li>
+            <li><strong>Stage 2 — IA-2 VerifierNet + Cloud Veto (6-10-4 MLP):</strong> Cross-checks cloud-top cooling (<code>T_TIR &lt; 273 K</code>), coordinate persistence, and solar-glint geometry to veto cloud-edge glare and static industrial flares.</li>
+            <li><strong>Customizable Delivery:</strong> Click <strong>🔔 Fire Alerts</strong> in the top bar (or use the button below) to set your monitored location, detection radius (<code>15–250 km</code>), minimum FRP threshold, desktop notifications, and audio alarms.</li>
+          </ul>
+          <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+            <button type="button" class="btn btn-primary" id="btn-tut-open-alert-cfg">⚙️ Configure Fire Alert Settings</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENTER ON MY LOCATION QUICK ACTION (SITS IN TOP-RIGHT MAP CONTROLS STACK) -->
+  <button class="hud-recenter-btn" id="btn-recenter-location" type="button" title="Re-center map on my location" aria-label="Re-center map on my location">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="6.5" />
+      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+      <line x1="12" y1="2" x2="12" y2="5.5" />
+      <line x1="12" y1="18.5" x2="12" y2="22" />
+      <line x1="2" y1="12" x2="5.5" y2="12" />
+      <line x1="18.5" y1="12" x2="22" y2="12" />
+    </svg>
+  </button>
+
+  <!-- ====================================================================
+       3. FLOATING LEFT HUD: MISSION CONTROLS & FILTERS
+       ==================================================================== -->
+  <div class="hud-left-anchor">
+    <aside class="hud-left-toolbar" id="hud-left-panel">
+    <div class="firms-panel-topbar">
+      <span class="firms-mode-title">LAYERS &amp; FILTERS</span>
+      <button class="hud-collapse-btn" id="btn-toggle-left-hud" type="button" title="Collapse panel">‹</button>
+    </div>
+
+    <div class="firms-panel-body">
+      <div class="hud-control-row-label">View &amp; Basemap</div>
+      <!-- Google-Maps-Style Visual Preview Swatch Row (Projection + Basemap) -->
+      <div class="gmaps-swatch-row-4" role="group" aria-label="View &amp; Basemap">
+        <button class="seg-btn gmaps-tile-btn active" id="btn-proj-globe" type="button" title="3D Spherical Earth Globe">
+          <span class="gmaps-swatch-box swatch-3d-globe">
+            <svg viewBox="0 0 64 64" width="100%" height="100%">
+              <defs>
+                <radialGradient id="swGlobeOcean" cx="36%" cy="32%" r="65%">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="45%" stop-color="#0284c7"/>
+                  <stop offset="85%" stop-color="#0f294a"/>
+                  <stop offset="100%" stop-color="#061224"/>
+                </radialGradient>
+                <radialGradient id="swGlobeAtm" cx="50%" cy="50%" r="50%">
+                  <stop offset="78%" stop-color="#38bdf8" stop-opacity="0"/>
+                  <stop offset="93%" stop-color="#38bdf8" stop-opacity="0.45"/>
+                  <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0"/>
+                </radialGradient>
+              </defs>
+              <rect width="64" height="64" fill="#040812"/>
+              <circle cx="10" cy="12" r="0.8" fill="#e2e8f0" opacity="0.6"/>
+              <circle cx="54" cy="14" r="1" fill="#bae6fd" opacity="0.7"/>
+              <circle cx="52" cy="52" r="0.7" fill="#e2e8f0" opacity="0.5"/>
+              <circle cx="32" cy="32" r="26" fill="url(#swGlobeAtm)"/>
+              <circle cx="32" cy="32" r="22" fill="url(#swGlobeOcean)" stroke="#7dd3fc" stroke-width="0.9" stroke-opacity="0.65"/>
+              <!-- Continents on 3D sphere -->
+              <path d="M18 20c4-3 9-2 12 2 2 3-1 7-3 9-2 2-1 5 2 7 2 2 1 6-2 7-4 1-8-4-9-9-1-4-3-6-2-10 0-3 1-5 2-6Z" fill="#4d7c4f" opacity="0.92"/>
+              <path d="M20 22c3-1 6 1 7 4-1 2-4 4-6 3-2-1-2-5-1-7Z" fill="#84a96c" opacity="0.75"/>
+              <path d="M36 17c5 1 9 5 10 11 0 5-4 10-7 13-2 2-4 0-4-3 0-4 2-6 1-10-1-3-3-5-2-8 0-2 1-3 2-3Z" fill="#5b8752" opacity="0.88"/>
+              <ellipse cx="32" cy="12.5" rx="8" ry="2" fill="#f8fafc" opacity="0.65"/>
+              <!-- Active Fire Hotspots -->
+              <circle cx="24" cy="28" r="2.6" fill="#ef4444" opacity="0.5"/>
+              <circle cx="24" cy="28" r="1.4" fill="#fde047"/>
+              <circle cx="27" cy="37" r="2.2" fill="#f97316" opacity="0.55"/>
+              <circle cx="27" cy="37" r="1.2" fill="#fef08a"/>
+              <circle cx="41" cy="27" r="2.4" fill="#ef4444" opacity="0.5"/>
+              <circle cx="41" cy="27" r="1.3" fill="#fde047"/>
+            </svg>
+            <span class="gmaps-swatch-badge">3D</span>
+          </span>
+          <span class="gmaps-tile-label">3D Globe</span>
+        </button>
+
+        <button class="seg-btn gmaps-tile-btn" id="btn-proj-flat" type="button" title="2D Flat Mercator Map">
+          <span class="gmaps-swatch-box swatch-2d-flat">
+            <svg viewBox="0 0 64 64" width="100%" height="100%">
+              <rect width="64" height="64" fill="#0d2e4c"/>
+              <!-- Flat Mercator Continents -->
+              <path d="M4 12h16l5 8-4 10-7 3-6-5-4-8Z" fill="#4f7d53"/>
+              <path d="M16 35l8 3 3 10-5 11-6-3-2-12Z" fill="#5c8a58"/>
+              <path d="M31 11h22l6 9-5 11-11 2-8-5-4-9Z" fill="#6b8f5e"/>
+              <path d="M33 30l11 2 4 11-6 11-7-4-3-11Z" fill="#829b64"/>
+              <path d="M51 44l9 2 2 8-7 4-4-6Z" fill="#7c8f5a"/>
+              <!-- Flat Graticule Grid Lines -->
+              <line x1="0" y1="16" x2="64" y2="16" stroke="#7dd3fc" stroke-opacity="0.24" stroke-width="0.8"/>
+              <line x1="0" y1="32" x2="64" y2="32" stroke="#7dd3fc" stroke-opacity="0.4" stroke-width="0.9" stroke-dasharray="2 2"/>
+              <line x1="0" y1="48" x2="64" y2="48" stroke="#7dd3fc" stroke-opacity="0.24" stroke-width="0.8"/>
+              <line x1="16" y1="0" x2="16" y2="64" stroke="#7dd3fc" stroke-opacity="0.24" stroke-width="0.8"/>
+              <line x1="32" y1="0" x2="32" y2="64" stroke="#7dd3fc" stroke-opacity="0.35" stroke-width="0.8"/>
+              <line x1="48" y1="0" x2="48" y2="64" stroke="#7dd3fc" stroke-opacity="0.24" stroke-width="0.8"/>
+              <!-- Fire Hotspots -->
+              <circle cx="14" cy="21" r="2.2" fill="#f97316"/>
+              <circle cx="20" cy="43" r="2.2" fill="#ef4444"/>
+              <circle cx="39" cy="38" r="2.2" fill="#fde047"/>
+            </svg>
+            <span class="gmaps-swatch-badge">2D</span>
+          </span>
+          <span class="gmaps-tile-label">2D Planar</span>
+        </button>
+
+        <button class="seg-btn gmaps-tile-btn active" id="btn-base-satellite" type="button" title="Real Satellite Imagery Basemap">
+          <span class="gmaps-swatch-box swatch-satellite">
+            <svg viewBox="0 0 64 64" width="100%" height="100%">
+              <defs>
+                <linearGradient id="swSatBase" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#284226"/>
+                  <stop offset="38%" stop-color="#3f5934"/>
+                  <stop offset="72%" stop-color="#756147"/>
+                  <stop offset="100%" stop-color="#4b3d2e"/>
+                </linearGradient>
+              </defs>
+              <rect width="64" height="64" fill="url(#swSatBase)"/>
+              <!-- Realistic Aerial Ridges, Valleys & River Delta -->
+              <path d="M0 14 Q18 24 28 10 T64 18 L64 0 L0 0 Z" fill="#1e351d" opacity="0.78"/>
+              <path d="M0 44 Q22 32 40 48 T64 38 L64 64 L0 64 Z" fill="#5e4c36" opacity="0.82"/>
+              <path d="M12 0 C16 18 8 30 24 42 C36 50 44 54 52 64" fill="none" stroke="#1d4e6b" stroke-width="4.5" stroke-linecap="round"/>
+              <path d="M12 0 C16 18 8 30 24 42 C36 50 44 54 52 64" fill="none" stroke="#38bdf8" stroke-width="1.3" stroke-opacity="0.55" stroke-linecap="round"/>
+              <!-- Mountain Ridge Highlights -->
+              <path d="M34 8 L42 22 L37 33 M42 22 L54 27" fill="none" stroke="#a89984" stroke-width="1.4" stroke-opacity="0.65" stroke-linecap="round"/>
+              <path d="M6 26 L16 34 L11 48" fill="none" stroke="#849b6e" stroke-width="1.3" stroke-opacity="0.55" stroke-linecap="round"/>
+              <!-- Active Thermal Plume Dot -->
+              <circle cx="44" cy="24" r="4" fill="#ef4444" opacity="0.45"/>
+              <circle cx="44" cy="24" r="2" fill="#fde047"/>
+            </svg>
+          </span>
+          <span class="gmaps-tile-label">Satellite</span>
+        </button>
+
+        <button class="seg-btn gmaps-tile-btn" id="btn-base-dark" type="button" title="High-Contrast Tactical Dark Cartography">
+          <span class="gmaps-swatch-box swatch-tactical-dark">
+            <svg viewBox="0 0 64 64" width="100%" height="100%">
+              <rect width="64" height="64" fill="#070d19"/>
+              <!-- Dark Slate Landmass & Neon Coastline -->
+              <path d="M0 8 L28 12 L38 26 L32 46 L44 58 L0 64 Z" fill="#111c2f" stroke="#0ea5e9" stroke-width="1.2" stroke-opacity="0.7"/>
+              <path d="M46 0 L64 0 L64 42 L50 32 L44 16 Z" fill="#111c2f" stroke="#0ea5e9" stroke-width="1.1" stroke-opacity="0.55"/>
+              <!-- Tactical Vector Roads / Borders -->
+              <path d="M4 22 L26 28 L32 46 M16 10 L18 56" fill="none" stroke="#334155" stroke-width="1" stroke-dasharray="2 2"/>
+              <!-- High-Contrast Thermal Hotspots -->
+              <circle cx="21" cy="27" r="5" fill="#ef4444" opacity="0.35"/>
+              <circle cx="21" cy="27" r="2.4" fill="#f97316"/>
+              <circle cx="21" cy="27" r="1.1" fill="#fef08a"/>
+              <circle cx="26" cy="39" r="4" fill="#ef4444" opacity="0.35"/>
+              <circle cx="26" cy="39" r="1.9" fill="#fb923c"/>
+              <circle cx="53" cy="20" r="3.5" fill="#f97316" opacity="0.4"/>
+              <circle cx="53" cy="20" r="1.6" fill="#fde047"/>
+            </svg>
+          </span>
+          <span class="gmaps-tile-label">Dark Map</span>
+        </button>
+      </div>
+
+      <div class="hud-control-row-label" style="margin-top:2px;">Zone &amp; Measure Tool</div>
+      <div class="segmented-bar segmented-5 tool-icon-strip" role="group" aria-label="Selection &amp; Measure Tool">
+        <button class="seg-btn tool-icon-btn active" id="map-tool-pan" type="button" title="Click any fire cluster on the globe to inspect">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+          <span>Inspect</span>
+        </button>
+        <button class="seg-btn tool-icon-btn" id="map-tool-rect" type="button" title="Drag a rectangular bounding box to filter &amp; analyze fires">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="4.5" width="17" height="15" rx="1.5" stroke-dasharray="3 2"/><circle cx="9" cy="11" r="1.5" fill="#f97316" stroke="none"/><circle cx="14.5" cy="13.5" r="1.5" fill="#fde047" stroke="none"/></svg>
+          <span>Box</span>
+        </button>
+        <button class="seg-btn tool-icon-btn" id="map-tool-poly" type="button" title="Draw a custom multi-point perimeter polygon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6 4 19 7 16 19 5 16"/><circle cx="6" cy="4" r="1.8" fill="currentColor"/><circle cx="19" cy="7" r="1.8" fill="currentColor"/><circle cx="16" cy="19" r="1.8" fill="currentColor"/><circle cx="5" cy="16" r="1.8" fill="currentColor"/></svg>
+          <span>Poly</span>
+        </button>
+        <button class="seg-btn tool-icon-btn" id="map-tool-measure" type="button" title="Click two points on the globe to measure distance in km">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2M11.5 9.5l2-2M8.5 6.5l2-2"/></svg>
+          <span>Measure</span>
+        </button>
+        <button class="seg-btn tool-icon-btn" id="map-tool-reset" type="button" title="Clear active selection and reset view">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          <span>Reset</span>
+        </button>
+      </div>
+      <div id="measure-distance-readout" class="measure-readout hidden"></div>
+
+      <!-- Hidden programmatic state mirrors (Region via Location Search, Harmonizer locked to best H_cal, Time via Bottom Timeline) -->
+      <div style="display:none;" aria-hidden="true">
+        <select id="global-region-select" title="Active Region"></select>
+        <select id="global-metric-select" title="Fire Intelligence Mode">
+          <option value="harmonized_calibrated" selected>Harmonized Fires (H_cal)</option>
+          <option value="harmonized_frp">Fire Intensity (FRP MW)</option>
+          <option value="colocated_events">Dual-Sensor Confirmed</option>
+          <option value="raw_concatenated">Raw Sensor Overlap</option>
+        </select>
+        <div id="firms-window-bar">
+          <button class="seg-btn" data-scope="LIVE_24H" type="button">24H</button>
+          <button class="seg-btn" data-scope="LIVE_7D" type="button">7D</button>
+          <button class="seg-btn active" data-scope="SELECTED_MONTH" type="button">Month</button>
+          <button class="seg-btn" data-scope="SELECTED_YEAR" type="button">Year</button>
+          <button class="seg-btn" data-scope="ALL_YEARS" type="button">All</button>
+        </div>
+        <select id="map-time-scope">
+          <option value="LIVE_24H">Last 24 Hours (NRT)</option>
+          <option value="LIVE_7D">Last 7 Days (NRT)</option>
+          <option value="SELECTED_MONTH" selected>Selected Month &amp; Year</option>
+          <option value="SELECTED_YEAR">Selected Full Year</option>
+          <option value="ALL_YEARS">Full Archive (2001–2026)</option>
+        </select>
+        <select id="global-year-select"></select>
+        <select id="global-month-select">
+          <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+          <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+          <option value="7">Jul</option><option value="8">Aug</option><option value="9">Sep</option>
+          <option value="10">Oct</option><option value="11" selected>Nov</option><option value="12">Dec</option>
+        </select>
+        <select id="global-day-select">
+          <option value="ALL" selected>All</option>
+          <option value="1">01</option><option value="2">02</option><option value="3">03</option>
+          <option value="4">04</option><option value="5">05</option><option value="6">06</option>
+          <option value="7">07</option><option value="8">08</option><option value="9">09</option>
+          <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          <option value="13">13</option><option value="14">14</option><option value="15">15</option>
+          <option value="16">16</option><option value="17">17</option><option value="18">18</option>
+          <option value="19">19</option><option value="20">20</option><option value="21">21</option>
+          <option value="22">22</option><option value="23">23</option><option value="24">24</option>
+          <option value="25">25</option><option value="26">26</option><option value="27">27</option>
+          <option value="28">28</option><option value="29">29</option><option value="30">30</option>
+          <option value="31">31</option>
+        </select>
+      </div>
+
+      <div class="control-field">
+        <label>Environmental Layers</label>
+        <!-- Google-Maps-Style Visual Layer Preview Tiles (Square Swatch on Top + Concise Label Below) -->
+        <div class="gmaps-env-row-2">
+          <button class="layer-toggle-chip gmaps-tile-btn gmaps-env-tile" id="toggle-layer-clouds" type="button" title="Overlay NASA GIBS VIIRS True Color Clouds &amp; Wildfire Smoke">
+            <span class="gmaps-swatch-box swatch-clouds">
+              <svg viewBox="0 0 64 64" width="100%" height="100%">
+                <defs>
+                  <linearGradient id="swCloudBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#15395b"/>
+                    <stop offset="55%" stop-color="#264e36"/>
+                    <stop offset="100%" stop-color="#10253f"/>
+                  </linearGradient>
+                </defs>
+                <rect width="64" height="64" fill="url(#swCloudBg)"/>
+                <!-- Swirling Atmospheric Cloud Bands & Smoke Plume -->
+                <path d="M-4 18 Q16 8 34 18 T68 14 L68 28 Q42 34 22 24 T-4 30 Z" fill="#f8fafc" opacity="0.72"/>
+                <path d="M2 22 Q20 14 38 22 T66 20" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" opacity="0.88"/>
+                <!-- Wildfire Smoke Plume Drifting from Fire -->
+                <path d="M18 50 C22 42 32 38 48 34 C54 32 60 30 64 28 L64 44 C52 46 36 48 22 52 Z" fill="#cbd5e1" opacity="0.58"/>
+                <circle cx="17" cy="51" r="3.5" fill="#ef4444" opacity="0.65"/>
+                <circle cx="17" cy="51" r="1.8" fill="#fde047"/>
+                <!-- Fluffy Cloud Cluster -->
+                <path d="M26 48h20a7 7 0 0 0 1-13.9 9 9 0 0 0-17.2-2.6A6 6 0 0 0 26 48Z" fill="#ffffff" opacity="0.9"/>
+              </svg>
+              <span class="gmaps-check-badge">✓</span>
+            </span>
+            <span class="gmaps-tile-label">Clouds</span>
+          </button>
+
+          <button class="layer-toggle-chip gmaps-tile-btn gmaps-env-tile" id="toggle-layer-topo" type="button" title="Overlay 3D Topographic Relief &amp; Elevation Contours (Terreno)">
+            <span class="gmaps-swatch-box swatch-terreno">
+              <svg viewBox="0 0 64 64" width="100%" height="100%">
+                <!-- Exact Google Maps 'Terreno' Topographic Relief Palette -->
+                <rect width="64" height="64" fill="#7a8b68"/>
+                <path d="M0 0 L42 0 Q34 24 14 36 L0 44 Z" fill="#95a582"/>
+                <path d="M0 0 L24 0 Q18 16 0 26 Z" fill="#b4c2a1"/>
+                <path d="M28 64 Q36 38 56 22 L64 16 L64 64 Z" fill="#637352"/>
+                <path d="M44 64 Q50 46 64 36 L64 64 Z" fill="#4f5e40"/>
+                <!-- Elevation Contour Lines -->
+                <path d="M0 32 Q20 22 30 0" fill="none" stroke="#556446" stroke-width="1" opacity="0.55"/>
+                <path d="M0 50 Q28 36 48 0" fill="none" stroke="#475439" stroke-width="1" opacity="0.5"/>
+                <path d="M20 64 Q38 40 64 20" fill="none" stroke="#aab898" stroke-width="1" opacity="0.45"/>
+                <!-- Winding Valley River (Like Google Maps Terreno Icon) -->
+                <path d="M6 42 C18 40 20 14 34 14 C46 14 44 38 40 64" fill="none" stroke="#f8fafc" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="gmaps-check-badge">✓</span>
+            </span>
+            <span class="gmaps-tile-label">Terrain</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="hud-grid-2">
+        <div class="control-field">
+          <label for="map-filter-instrument">Sensor</label>
+          <select id="map-filter-instrument" class="hud-native-select-hidden">
+            <option value="ALL">All Sensors</option>
+            <option value="MODIS">MODIS 1km</option>
+            <option value="VIIRS">VIIRS 375m</option>
+          </select>
+          <button class="hud-custom-select-btn" id="btn-picker-instrument" data-picker-target="map-filter-instrument" type="button">
+            <span class="hud-custom-select-text">All Sensors</span>
+            <span class="hud-custom-select-caret">▾</span>
+          </button>
+        </div>
+        <div class="control-field">
+          <label for="map-filter-confidence">Confidence</label>
+          <select id="map-filter-confidence" class="hud-native-select-hidden">
+            <option value="ALL">All</option>
+            <option value="Nominal" selected>Nominal + High</option>
+            <option value="High">High Only</option>
+          </select>
+          <button class="hud-custom-select-btn" id="btn-picker-confidence" data-picker-target="map-filter-confidence" type="button">
+            <span class="hud-custom-select-text">Nominal + High</span>
+            <span class="hud-custom-select-caret">▾</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="control-field">
+        <label for="map-filter-satellite">Satellite Platform</label>
+        <select id="map-filter-satellite" class="hud-native-select-hidden">
+          <option value="ALL">All Active &amp; Archive</option>
+          <option value="NOAA-20">NOAA-20 (VIIRS NRT)</option>
+          <option value="NOAA-21">NOAA-21 (VIIRS NRT)</option>
+          <option value="Suomi-NPP">Suomi-NPP (Archive)</option>
+          <option value="Aqua">EOS-Aqua (MODIS)</option>
+          <option value="Terra">EOS-Terra (MODIS)</option>
+        </select>
+        <button class="hud-custom-select-btn" id="btn-picker-satellite" data-picker-target="map-filter-satellite" type="button">
+          <span class="hud-custom-select-text">All Active &amp; Archive</span>
+          <span class="hud-custom-select-caret">▾</span>
+        </button>
+      </div>
+
+      <div class="hud-grid-2">
+        <div class="control-field">
+          <label for="map-filter-frp">Min FRP (MW)</label>
+          <input type="number" id="map-filter-frp" value="0" min="0" max="1000" step="5" autocomplete="off" />
+        </div>
+        <div class="control-field">
+          <label for="map-filter-daynight">Cycle</label>
+          <select id="map-filter-daynight" class="hud-native-select-hidden">
+            <option value="ALL">Day &amp; Night</option>
+            <option value="D">Daytime</option>
+            <option value="N">Nighttime</option>
+          </select>
+          <button class="hud-custom-select-btn" id="btn-picker-daynight" data-picker-target="map-filter-daynight" type="button">
+            <span class="hud-custom-select-text">Day &amp; Night</span>
+            <span class="hud-custom-select-caret">▾</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="hud-custom-select-btn hud-bbox-trigger-btn" id="btn-open-bbox-modal" type="button" title="Configure custom Lat/Lon Bounding Box">
+        <span class="hud-custom-select-text">Custom Coordinates (BBox)</span>
+        <span class="hud-bbox-badge" id="hud-bbox-status-badge">Global</span>
+      </button>
+    </div>
+
+    <div class="firms-blue-header">
+      <span>Live Sensor Counts</span>
+      <span style="font-family:var(--font-mono); font-size:10px; opacity:0.85;">NRT</span>
+    </div>
+    <div class="firms-panel-body">
+      <div id="map-summary-stats-box"></div>
+    </div>
+    </aside>
+    <button class="hud-edge-tab hud-edge-tab-left" id="tab-open-left-hud" type="button" title="Open Filters & Controls">
+      <span class="edge-tab-arrow">›</span>
+      <span class="edge-tab-label">FILTERS</span>
+    </button>
+  </div>
+
+  <!-- ====================================================================
+       4. FLOATING RIGHT HUD: ANOMALY TELEMETRY & AUTOMATIC QC INSPECTOR
+       ==================================================================== -->
+  <div class="hud-right-anchor">
+    <aside class="hud-right-drawer" id="hud-right-panel">
+    <div class="firms-panel-topbar">
+      <span class="firms-mode-title" style="color:var(--firms-orange);">ANOMALY &amp; TELEMETRY</span>
+      <button class="hud-collapse-btn" id="btn-toggle-right-hud" type="button" title="Collapse panel">›</button>
+    </div>
+
+    <div class="firms-blue-header">
+      <span>Seasonal Anomaly</span>
+      <span>2001–2026</span>
+    </div>
+
+    <div class="firms-panel-body">
+      <div id="unharmonized-warning-banner" class="sci-callout danger" style="display:none;">
+        <strong>Uncalibrated Mode:</strong> Direct sum includes post-2012 VIIRS scale jump. Switch to <strong>H_cal</strong> for decisions.
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div class="sci-panel" style="padding:8px 10px; gap:2px;">
+          <span style="font-size:10px; color:var(--text-secondary);">ACTIVITY (<span id="kpi-period-tag">Aug 2026</span>)</span>
+          <strong id="kpi-month-activity" style="font-family:var(--font-mono); font-size:18px; color:var(--eos-cyan);">—</strong>
+        </div>
+        <div class="sci-panel" style="padding:8px 10px; gap:2px;">
+          <span style="font-size:10px; color:var(--text-secondary);">VS MEDIAN</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <strong id="kpi-anomaly-pct" style="font-family:var(--font-mono); font-size:18px; color:#fb923c;">—</strong>
+            <span id="kpi-percentile-badge" class="anomaly-badge anom-sev-4">P—</span>
+          </div>
+        </div>
+      </div>
+
+      <table class="anomaly-spotlight-table">
+        <tbody id="overview-anomaly-tbody"></tbody>
+      </table>
+
+      <div id="overview-provenance-split" class="qc-auto-metrics" style="grid-template-columns:repeat(3,1fr); margin-top:4px;"></div>
+    </div>
+
+    <div class="firms-blue-header">
+      <span>Zone &amp; Fire Inspector</span>
+      <span>WGS84</span>
+    </div>
+
+    <div class="firms-panel-body">
+      <div id="hotspot-inspector-content">
+        <div style="font-size:11.5px; color:var(--text-secondary);">
+          Select a hotspot or draw a zone to inspect.
+        </div>
+      </div>
+    </div>
+    </aside>
+    <button class="hud-edge-tab hud-edge-tab-right" id="tab-open-right-hud" type="button" title="Open Anomaly & Zone Telemetry">
+      <span class="edge-tab-arrow">‹</span>
+      <span class="edge-tab-label">TELEMETRY</span>
+    </button>
+  </div>
+
+  <!-- ====================================================================
+       4B. FIRMS-STYLE FLOATING TABBED PIXEL POPUP TABLE (CENTERED & RESPONSIVE)
+       ==================================================================== -->
+  <div class="firms-pixel-popup" id="firms-pixel-popup">
+    <div class="firms-popup-card">
+      <div class="firms-panel-topbar firms-popup-header-bar">
+        <span class="firms-mode-title">SATELLITE DETECTIONS</span>
+        <div class="firms-popup-header-right">
+          <div class="firms-popup-tz-bar">
+            <label class="firms-tz-opt"><input type="radio" name="firms-popup-tz" value="utc" /> UTC</label>
+            <label class="firms-tz-opt"><input type="radio" name="firms-popup-tz" value="local" checked /> <span id="firms-local-tz-label">Local Time</span></label>
+          </div>
+          <button class="firms-popup-close-btn" id="btn-close-firms-popup" type="button" title="Hide sensor table">✕</button>
+        </div>
+      </div>
+
+      <div class="firms-sensor-tabs" id="firms-popup-tabs">
+        <div class="firms-sensor-tab" data-sat="Terra">MODIS<br/>Terra [1km]</div>
+        <div class="firms-sensor-tab" data-sat="Aqua">MODIS<br/>Aqua [1km]</div>
+        <div class="firms-sensor-tab active" data-sat="NOAA-20">VIIRS<br/>NOAA-20 [375m]</div>
+        <div class="firms-sensor-tab" data-sat="NOAA-21">VIIRS<br/>NOAA-21 [375m]</div>
+        <div class="firms-sensor-tab" data-sat="Suomi-NPP">VIIRS<br/>S-NPP [375m]</div>
+      </div>
+
+      <div class="firms-popup-table-wrap">
+        <table class="firms-popup-table" id="firms-popup-table"></table>
+      </div>
+
+      <div class="firms-popup-filter-bar">
+        <span class="firms-filter-label">FILTER BY</span>
+        <input
+          id="firms-popup-filter-text"
+          name="choki_sensor_filter_q"
+          type="search"
+          placeholder="Filter values..."
+          autocomplete="off"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          data-form-type="other"
+          readonly
+          onfocus="this.removeAttribute('readonly');"
+        />
+        <select id="firms-popup-filter-field" title="Filter field">
+          <option value="all">All fields</option>
+          <option value="latitude">latitude</option>
+          <option value="longitude">longitude</option>
+          <option value="bright_mir">bright_mir</option>
+          <option value="scan">scan</option>
+          <option value="track">track</option>
+          <option value="acquire_time">acquire_time</option>
+          <option value="satellite">satellite</option>
+          <option value="instrument">instrument</option>
+          <option value="confidence">confidence</option>
+          <option value="frp">frp</option>
+          <option value="daynight">daynight</option>
+        </select>
+        <select id="firms-popup-filter-date" title="Filter date">
+          <option value="ALL">All dates</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Attached pull-tab viñeta for continuous hide/show of Orbital Sensor Detections -->
+    <button class="hud-edge-tab-sensor" id="tab-toggle-sensor-popup" type="button" title="Hide / Show Orbital Sensor Detections">
+      <span class="sensor-tab-arrow">›</span>
+      <span class="sensor-tab-label" id="sensor-tab-label-text">SENSORS</span>
+    </button>
+  </div>
+
+  <!-- ====================================================================
+       5. FIRMS BOTTOM ACTION DOCK + MODERN NASA FIRMS TIMELINE RULER
+       ==================================================================== -->
+  <div class="bottom-dock-wrapper" id="bottom-dock-wrapper">
+    <!-- Floating Coordinates Readout Pill (Bottom-Left above Timeline) -->
+    <div id="main-map-coords-footer" class="bottom-coords-readout">
+      3D Earth Active • Click any fire zone to inspect
+    </div>
+
+    <div class="firms-dock-row">
+      <nav class="firms-bottom-dock main-nav" role="navigation" aria-label="Main Navigation">
+        <button class="dock-btn nav-tab" data-view="calendar" type="button">
+          <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>CALENDAR</span>
+        </button>
+        <button class="dock-btn nav-tab" data-view="analysis" type="button">
+          <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>ANALYTICS</span>
+        </button>
+        <button class="dock-btn nav-tab" data-view="comparison" type="button">
+          <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>COMPARE</span>
+        </button>
+        <button class="dock-btn nav-tab" data-view="methodology" type="button">
+          <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>SCIENCE</span>
+        </button>
+
+        <!-- NASA FIRMS Style Tool Tiles (Timeline, Capture, Export, View Mode) -->
+        <button class="dock-btn dock-tool-tile active-timeline-tile" id="btn-toggle-timeline-bar" type="button" title="Toggle Interactive Timeline Ruler">
+          <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor"/>
+            <line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="currentColor"/>
+            <line x1="4" y1="18" x2="20" y2="18"/><circle cx="11" cy="18" r="2" fill="currentColor"/>
+          </svg>
+          <span>TIMELINE</span>
+        </button>
+        <button class="dock-btn dock-tool-tile" id="btn-capture-map" type="button" title="Take real screenshot (PNG / JPG / WebP)">
+          <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span>CAPTURE</span>
+        </button>
+        <button class="dock-btn dock-tool-tile" id="btn-open-export-modal" type="button" title="Export Chokí Harmonized Database (CSV / GeoJSON)">
+          <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>EXPORT</span>
+        </button>
+        <button class="dock-btn dock-tool-tile" id="btn-restore-huds" type="button" title="Toggle HUD Panels">
+          <svg class="dock-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span>VIEW MODE</span>
+        </button>
+      </nav>
+    </div>
+
+    <footer class="hud-bottom-bar firms-timeline-ruler-bar" id="firms-timeline-bar">
+      <!-- LEFT / MAIN SECTION: DAY TICK RULER -->
+      <div class="firms-ruler-main">
+        <!-- Hidden compatibility inputs -->
+        <input id="timeline-day-slider" type="range" min="0" max="31" step="1" value="14" style="display:none;" />
+        <span id="timeline-day-badge" style="display:none;">Nov 14</span>
+
+        <!-- Numbered Day Tick Cells (1..15..30) with Sky-Blue Selection Highlight -->
+        <div class="firms-ruler-days-track" id="firms-timeline-days-track" role="slider" aria-label="Interactive Day Timeline">
+          <!-- Populated dynamically by renderFirmsTimelineRuler() in app.js -->
+        </div>
+      </div>
+
+      <!-- RIGHT CONTROL POD: Active Date Pill + Stepper Arrows + Step Mode + Orbital Badge -->
+      <div class="firms-ruler-control-pod">
+        <div class="firms-pod-main">
+          <div class="firms-pod-top-row">
+            <button class="firms-active-date-pill" id="timeline-active-date-pill" type="button" title="Open Calendar Date Picker">
+              NOV 15 2026
+            </button>
+            <button class="firms-pod-today-btn" id="btn-timeline-today" type="button" title="Jump to Latest NRT Overpass">
+              TODAY
+            </button>
+          </div>
+          <div class="firms-pod-transport-row">
+            <button class="firms-step-btn" id="btn-timeline-prev" type="button" title="Step Backward">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <rect x="2" y="3" width="2.4" height="10" rx="0.5"/>
+                <polygon points="13.5,3 6,8 13.5,13"/>
+              </svg>
+            </button>
+            <button class="firms-play-toggle-btn" id="btn-timeline-play" type="button" title="Play / Pause Timeline">▶</button>
+            <select class="firms-step-mode-select" id="timeline-step-mode" style="display:none;">
+              <option value="day" selected>DAY</option>
+              <option value="week">WEEK</option>
+              <option value="month">MONTH</option>
+              <option value="year">YEAR</option>
+              <option value="all_years">ALL YEARS</option>
+              <option value="24h">24H</option>
+              <option value="7d">7D</option>
+            </select>
+            <button class="firms-step-mode-btn" id="btn-timeline-step-mode" type="button" title="Select Time Window &amp; Step Mode">
+              <span id="timeline-step-mode-label">DAY</span>
+              <span class="firms-step-caret">▾</span>
+            </button>
+            <button class="firms-step-btn" id="btn-timeline-next" type="button" title="Step Forward">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                <polygon points="2.5,3 10,8 2.5,13"/>
+                <rect x="11.6" y="3" width="2.4" height="10" rx="0.5"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="firms-orbital-emblem" title="Chokí × NASA FIRMS Harmonized Orbital Timeline">
+          <img src="assets/logo/project-logo.svg" alt="Chokí" class="firms-orbital-logo" />
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ====================================================================
+       6. ANALYTICAL GLASSMORPHIC DRAWER OVERLAY
+       ==================================================================== -->
+  <div class="analytical-overlay-backdrop" id="analytical-overlay">
+    <div class="overlay-close-bar">
+      <div class="overlay-title-group">
+        <strong id="overlay-view-title" class="overlay-main-title">Chokí Scientific Suite</strong>
+        <span id="overlay-active-region-badge" class="overlay-region-badge">Global</span>
+      </div>
+      <button class="btn-back-globe" id="btn-close-overlay" type="button">
+        <span>←</span>
+        <span>Back to 3D Globe</span>
+      </button>
+    </div>
+
+    <!-- VIEW: HARMONIZATION PROOF, FIRMS DIFFERENTIATORS & AUDITED QC -->
+    <section id="view-validation-proof" class="view-section">
+      <div class="grid-12">
+        <div class="col-12 sci-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Empirical Calibration &amp; Audit Summary</div>
+              <div class="panel-subtitle">Real-time cross-sensor verification across MODIS (1 km) and VIIRS (375 m)</div>
+            </div>
+            <span class="provenance-pill pill-harmonized" id="qc-audit-timestamp">SILENT BACKGROUND QC ACTIVE</span>
+          </div>
+          <div id="ai-proof-scorecard-grid" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;"></div>
+        </div>
+
+        <div class="col-12 sci-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Scientific Pipeline Architecture</div>
+              <div class="panel-subtitle">How Chokí corrects raw multi-sensor satellite feeds before visualization</div>
+            </div>
+          </div>
+          <div class="innovation-grid">
+            <div class="innovation-card">
+              <h4>1. Cross-Sensor Continuity</h4>
+              <p>Raw FIRMS mixes 1 km MODIS with 375 m VIIRS, creating an artificial post-2012 spike. Chokí calibrates VIIRS onto the 26-year MODIS baseline (<code>H_cal</code>) so 2001–2026 trends remain physically comparable.</p>
+            </div>
+            <div class="innovation-card">
+              <h4>2. Zero Double-Counting</h4>
+              <p>One wildfire can trigger overlapping pixels across Terra, Aqua, NOAA-20, and NOAA-21. Chokí clusters coincident passes within Δx ≤ 1.5 km and Δt ≤ 6 h into unique co-located thermal events.</p>
+            </div>
+            <div class="innovation-card">
+              <h4>3. Month-Conditional Anomaly SPC</h4>
+              <p>Evaluates whether current activity is statistically abnormal against the 2001–2026 same-month climatology using robust <code>Z_MAD</code> and <code>P0–P100</code> percentiles.</p>
+            </div>
+            <div class="innovation-card">
+              <h4>4. Dual-AI &amp; Swath Screening</h4>
+              <p>Filters static gas flares, solar glint, and cloud-edge artifacts using spectral <code>ΔT (MIR−TIR)</code>, persistence checks, and automated 15-minute NRT orbital sweeps.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-7 sci-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Automated Thermal &amp; False-Positive Screening</div>
+              <div class="panel-subtitle">Pixel-level Dual-AI consensus audit (FireNet + VerifierNet)</div>
+            </div>
+          </div>
+          <div id="ai-screening-breakdown"></div>
+          <div class="data-table-wrap" style="max-height:280px;">
+            <table class="sci-table" id="ai-predictions-table"></table>
+          </div>
+        </div>
+
+        <div class="col-5 sci-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Live Swath Cadence &amp; Watchdog</div>
+              <div class="panel-subtitle">Automated NRT orbital monitoring around your active location</div>
+            </div>
+          </div>
+          <div id="watchdog-status-card" class="sci-callout" style="font-size:12.5px; line-height:1.55;">
+            NASA FIRMS enforces a <strong>5,000 transactions / 10-minute</strong> quota. Chokí schedules live NRT orbital refreshes every <strong>15 minutes</strong> across <code>MODIS_NRT</code>, <code>VIIRS_NOAA20_NRT</code>, and <code>VIIRS_NOAA21_NRT</code> (3 transactions per cycle) to screen your monitored perimeter.
+          </div>
+          <div id="ai-chat-response-box" class="sci-callout" style="margin-top:10px; font-size:12.2px; line-height:1.5;">
+            Click any fire cluster on the globe or use the GPS / Search controls to update local thermal screening automatically.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: BURNING CALENDAR -->
+    <section id="view-calendar" class="view-section">
+      <div class="grid-12">
+        <div class="col-8 sci-panel">
+          <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
+            <div>
+              <div class="panel-title">Historical Fire Activity Calendar (2001–2026)</div>
+              <div class="panel-subtitle">Years (vertical) × Months (horizontal). Dots denote significant anomalies (≥ 88th Percentile).</div>
+            </div>
+            <div class="control-group" style="gap:8px; flex-wrap:wrap;">
+              <div class="inline-loc-search-wrap">
+                <input id="cal-location-search" name="choki_cal_loc_q" type="search" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-form-type="other" readonly onfocus="this.removeAttribute('readonly');" placeholder="Search region or city for calendar..." aria-label="Search calendar location" />
+                <div id="cal-location-dropdown" class="inline-loc-dropdown" style="display:none;"></div>
+              </div>
+              <select id="cal-cell-display-mode">
+                <option value="value" selected>Activity Index</option>
+                <option value="pct_anomaly">% Anomaly vs Median</option>
+                <option value="percentile">Percentile (P0–P100)</option>
+              </select>
+            </div>
+          </div>
+          <div class="calendar-scroll-wrapper">
+            <table class="burning-calendar-table" id="full-burning-calendar-table"></table>
+          </div>
+          <div class="cal-legend">
+            <span><strong>Scale:</strong></span>
+            <div class="legend-scale-bar">
+              <span class="legend-swatch" style="background:#0f243c;"></span>
+              <span class="legend-swatch" style="background:#1b4965;"></span>
+              <span class="legend-swatch" style="background:#2a6f97;"></span>
+              <span class="legend-swatch" style="background:#d97706;"></span>
+              <span class="legend-swatch" style="background:#ea580c;"></span>
+              <span class="legend-swatch" style="background:#dc2626;"></span>
+            </div>
+            <span>Low → Nominal → Elevated → Unusually High → Extreme (●)</span>
+          </div>
+        </div>
+
+        <div class="col-4 sci-panel">
+          <div class="panel-header">
+            <div class="panel-title" id="cal-detail-title">Same-Month Historical Comparator</div>
+          </div>
+          <div id="cal-selected-cell-details"></div>
+          <div class="chart-canvas-wrap" style="min-height:200px;">
+            <canvas id="chart-calendar-same-month" class="sci-chart" style="height:200px;"></canvas>
+          </div>
+          <div class="data-table-wrap" style="max-height:220px;">
+            <table class="sci-table" id="cal-monthly-baselines-table"></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: FIRE ANALYTICS, TRENDS & HARMONIZATION PROOF -->
+    <section id="view-analysis" class="view-section">
+      <div class="grid-12">
+        <div class="col-12 sci-panel">
+          <div class="panel-header" style="flex-wrap:wrap; gap:10px; margin-bottom:0;">
+            <div>
+              <div class="panel-title">Regional Fire Analytics &amp; Historical Trends (2001–2026)</div>
+              <div class="panel-subtitle">Compare years, inspect seasonal fire peaks, extreme anomalies, and cross-sensor calibration</div>
+            </div>
+            <div class="control-group">
+              <div class="inline-loc-search-wrap">
+                <input id="analysis-location-search" name="choki_analysis_loc_q" type="search" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-form-type="other" readonly onfocus="this.removeAttribute('readonly');" placeholder="Search region or city..." aria-label="Search analytics location" />
+                <div id="analysis-location-dropdown" class="inline-loc-dropdown" style="display:none;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 sci-panel">
+          <div class="panel-header">
+            <div class="panel-title">Interannual Comparison (Year A vs. Year B vs. Median)</div>
+            <div class="control-group">
+              <select id="analysis-year-a"></select>
+              <span>vs</span>
+              <select id="analysis-year-b"></select>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap"><canvas id="chart-analysis-year-vs-year" class="sci-chart"></canvas></div>
+        </div>
+
+        <div class="col-6 sci-panel">
+          <div class="panel-header">
+            <div class="panel-title">Historical Fire Fingerprint (Seasonal Profile)</div>
+          </div>
+          <div class="chart-canvas-wrap"><canvas id="chart-analysis-fingerprint" class="sci-chart"></canvas></div>
+          <div id="analysis-fingerprint-summary" class="sci-callout"></div>
+        </div>
+
+        <div class="col-7 sci-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Cross-Sensor Harmonization (2001–2026): Calibrated vs. Unharmonized</div>
+              <div class="panel-subtitle" id="overview-epoch-diagnostics"></div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="chart-overview-harmonization-proof" class="sci-chart" style="height:220px;"></canvas>
+          </div>
+        </div>
+
+        <div class="col-5 sci-panel">
+          <div class="panel-header">
+            <div class="panel-title">Top Historical Fire Anomalies Detected</div>
+          </div>
+          <div class="data-table-wrap" style="max-height:260px;"><table class="sci-table" id="analysis-anomalies-table"></table></div>
+        </div>
+
+        <div class="col-12 sci-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Monthly Transfer Calibration Parameters (2012–2026 Overlap)</div>
+              <div class="panel-subtitle">Scientific regression coefficients (α, β, R²) mapping VIIRS 375 m onto the MODIS 1 km baseline</div>
+            </div>
+          </div>
+          <div class="data-table-wrap"><table class="sci-table" id="analysis-calibration-table"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: REGIONAL COMPARISON -->
+    <section id="view-comparison" class="view-section">
+      <div class="grid-12">
+        <div class="col-12 sci-panel">
+          <div class="panel-header" style="flex-wrap:wrap; gap:10px;">
+            <div>
+              <div class="panel-title">Cross-Regional Fire Regime Comparison</div>
+              <div class="panel-subtitle">Search any two regions or cities to compare 26-year seasonality, trajectories, and trends</div>
+            </div>
+            <div class="control-group" style="gap:8px; flex-wrap:wrap;">
+              <div class="inline-loc-search-wrap">
+                <input id="comp-search-a" name="choki_comp_a_q" type="search" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-form-type="other" readonly onfocus="this.removeAttribute('readonly');" placeholder="Region / City A..." aria-label="Search first location to compare" />
+                <div id="comp-dropdown-a" class="inline-loc-dropdown" style="display:none;"></div>
+              </div>
+              <select id="comp-region-a" style="display:none;"></select>
+              <span style="color:#94a3b8; font-weight:700; font-size:11px;">VS</span>
+              <div class="inline-loc-search-wrap">
+                <input id="comp-search-b" name="choki_comp_b_q" type="search" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-form-type="other" readonly onfocus="this.removeAttribute('readonly');" placeholder="Region / City B..." aria-label="Search second location to compare" />
+                <div id="comp-dropdown-b" class="inline-loc-dropdown" style="display:none;"></div>
+              </div>
+              <select id="comp-region-b" style="display:none;"></select>
+              <button class="btn btn-primary" id="btn-run-regional-comp" type="button">Compare</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 sci-panel">
+          <div class="panel-header"><div class="panel-title">Seasonality (% Annual Share by Month)</div></div>
+          <div class="chart-canvas-wrap"><canvas id="chart-comp-seasonality" class="sci-chart"></canvas></div>
+        </div>
+        <div class="col-6 sci-panel">
+          <div class="panel-header"><div class="panel-title">Harmonized Annual Trajectory (2001–2026)</div></div>
+          <div class="chart-canvas-wrap"><canvas id="chart-comp-annual" class="sci-chart"></canvas></div>
+        </div>
+        <div class="col-12 sci-panel">
+          <div class="data-table-wrap"><table class="sci-table" id="comp-summary-table"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: SCIENTIFIC METHODOLOGY -->
+    <section id="view-methodology" class="view-section">
+      <div class="grid-12">
+        <div class="col-12 sci-panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">Mathematical Harmonization Model: MODIS (1 km) + VIIRS (375 m)</div>
+              <div class="panel-subtitle">Step-by-step physical calibration, deduplication, and robust anomaly equations powering Chokí (2001–2026)</div>
+            </div>
+          </div>
+          <div class="math-grid">
+            <div class="math-card">
+              <div class="math-step-kicker">STEP 1 • SENSOR RESOLUTION PHYSICS</div>
+              <h4>Pixel Footprint &amp; Fragmentation Ratio</h4>
+              <div class="math-formula-box">A_MODIS ≈ 1.00 km² &nbsp;|&nbsp; A_VIIRS ≈ 0.14 km² &nbsp;⇒&nbsp; A_MODIS / A_VIIRS ≈ 7.1×</div>
+              <p>A single fire front resolved as 1 MODIS pixel (1 km) splits into 3–6 VIIRS pixels (375 m) and detects cooler sub-pixel fires. Concatenating raw counts creates an artificial +800% jump after 2012.</p>
+            </div>
+
+            <div class="math-card">
+              <div class="math-step-kicker">STEP 2 • CO-LOCATION CLUSTERING</div>
+              <h4>Zero Double-Counting Event Fusion</h4>
+              <div class="math-formula-box">d_haversine(i, j) ≤ r_i + r_j + δ &nbsp;∧&nbsp; |t_i − t_j| ≤ 6 h</div>
+              <p>Simultaneous detections from Terra, Aqua, NOAA-20, and NOAA-21 within spatial footprint overlap and a 6-hour orbital window are clustered into a single thermal event so FRP is never double-counted.</p>
+            </div>
+
+            <div class="math-card">
+              <div class="math-step-kicker">STEP 3 • OVERLAP TRANSFER CALIBRATION</div>
+              <h4>Harmonized Activity Series (H_cal)</h4>
+              <div class="math-formula-box">H_cal(y, m) = α_m · VIIRS(y, m) + β_m &nbsp; (calibrated on 2012–2026 overlap)</div>
+              <p>For each calendar month <em>m ∈ {1..12}</em>, Chokí fits a robust transfer function mapping VIIRS counts onto the 2001–2026 MODIS baseline (with R² diagnostics), removing sensor bias while preserving real seasonal variability.</p>
+            </div>
+
+            <div class="math-card">
+              <div class="math-step-kicker">STEP 4 • ROBUST ANOMALY DETECTION</div>
+              <h4>Month-Conditional Z_MAD &amp; Percentiles</h4>
+              <div class="math-formula-box">Z_MAD = 0.6745 · (x − median_m) / MAD_m &nbsp;|&nbsp; MAD_m = median(|x_i − median_m|)</div>
+              <p>Each month is compared only against the same calendar month across 26 years. Using Median &amp; MAD avoids distortion from extreme mega-fire years. Extreme Anomaly triggers at P ≥ 96 or (Z_MAD ≥ 2.4 &amp; +75%).</p>
+            </div>
+
+            <div class="math-card">
+              <div class="math-step-kicker">STEP 5 • SECULAR TREND</div>
+              <h4>Non-Parametric Theil-Sen Slope</h4>
+              <div class="math-formula-box">β_TS = median_{i &lt; j} [ (H_cal(t_j) − H_cal(t_i)) / (t_j − t_i) ]</div>
+              <p>Measures long-term fire activity change per year (2001–2026) using the median of all pairwise slopes, ensuring outlier years do not artificially tilt the climate trend.</p>
+            </div>
+
+            <div class="math-card">
+              <div class="math-step-kicker">STEP 6 • DUAL-AI THERMAL SCREENING</div>
+              <h4>Spectral Contrast &amp; False-Positive Veto</h4>
+              <div class="math-formula-box">ΔT = T_MIR − T_TIR &nbsp;|&nbsp; Active Biomass if (type == 0 ∧ ΔT ≥ τ ∧ ¬persistent_flare)</div>
+              <p>Combines mid-infrared (MIR ~4 μm) vs. thermal-infrared (TIR ~11 μm) brightness contrast with coordinate persistence and solar-glint geometry to filter out industrial gas flares and cloud edges.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="vendor/react.production.min.js"></script>
+  <script src="vendor/react-dom.production.min.js"></script>
+  <script src="vendor/html2canvas.min.js"></script>
+  <script src="js/choki-react.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
